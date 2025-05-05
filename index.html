@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracking</title>
+    <style>
+        /* Global reset for the page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e0e5ec;
+            color: #333;
+        }
+
+        /* Main container for content */
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: #e0e5ec;
+            border-radius: 15px;
+            box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.1), -10px -10px 20px rgba(255, 255, 255, 0.7);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        /* Title */
+        h1 {
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        /* Fullscreen map container */
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.2), -6px -6px 12px rgba(255, 255, 255, 0.8);
+            margin-top: 20px;
+        }
+
+        /* Neumorphism buttons */
+        button {
+            background: #e0e5ec;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -6px -6px 12px rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        button:hover {
+            box-shadow: 12px 12px 24px rgba(0, 0, 0, 0.2), -12px -12px 24px rgba(255, 255, 255, 0.8);
+        }
+
+        button:active {
+            box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.1), inset -6px -6px 12px rgba(255, 255, 255, 0.7);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Location Tracking</h1>
+        <div id="map"></div>
+        <div>
+            <button onclick="startTracking()">Start Tracking</button>
+            <button onclick="stopTracking()">Stop Tracking</button>
+        </div>
+    </div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2KKrvrPsLGbEl35nTAvfic9B4u7btwwY&callback=initMap" async defer></script>
+    <script>
+        let map;
+        let userMarker;
+        let watchId;
+
+        function initMap() {
+            // Initialize the map centered at a default location (e.g., Manila, Philippines)
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 14.5995, lng: 120.9842 }, // Manila coordinates
+                zoom: 14
+            });
+        }
+
+        function startTracking() {
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(
+                    function(position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        const location = { lat: latitude, lng: longitude };
+
+                        // Update or create a marker for the user's location
+                        if (!userMarker) {
+                            userMarker = new google.maps.Marker({
+                                position: location,
+                                map: map,
+                                title: "You are here"
+                            });
+                        } else {
+                            userMarker.setPosition(location);
+                        }
+
+                        // Center the map to the current location
+                        map.setCenter(location);
+                    },
+                    function(error) {
+                        console.error("Error getting location: ", error);
+                    }, {
+                        enableHighAccuracy: true,
+                        maximumAge: 10000,
+                        timeout: 5000
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                alert("Location tracking stopped.");
+            }
+        }
+    </script>
+</body>
+</html>
